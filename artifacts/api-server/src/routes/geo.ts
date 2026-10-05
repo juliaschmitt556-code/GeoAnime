@@ -1,5 +1,5 @@
 import { createHash, randomBytes, timingSafeEqual } from "node:crypto";
-import { and, eq, lt, or } from "drizzle-orm";
+import { and, eq, lt, or } from "@workspace/db";
 import { Router, type IRouter, type Response as ExpressResponse } from "express";
 import {
   CreateGeoSessionBody,
