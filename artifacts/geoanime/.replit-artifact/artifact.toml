@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "GeoAnime"
+description = "A mobile-first GPS location-sharing app with live tracking, U.S. reverse geocoding, interactive maps, secure temporary share links, and an original anime-inspired identity."
+version = "1.0.0"
+id = "artifacts/geoanime"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23975
+
+[services.development]
+run = "pnpm --filter @workspace/geoanime run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/geoanime", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/geoanime/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23975"
+BASE_PATH = "/"

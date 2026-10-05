@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: geo
+    description: U.S. location and temporary sharing operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,209 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /geo/reverse-geocode:
+    get:
+      operationId: reverseGeocode
+      tags: [geo]
+      summary: Resolve a coordinate to a U.S. address
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -90
+            maximum: 90
+        - name: lon
+          in: query
+          required: true
+          schema:
+            type: number
+            minimum: -180
+            maximum: 180
+      responses:
+        "200":
+          description: The most detailed address available for the U.S. location
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoAddress"
+        "422":
+          description: The coordinate is outside the supported country
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Invalid coordinate
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /geo/sessions:
+    post:
+      operationId: createGeoSession
+      tags: [geo]
+      summary: Create a private, temporary location share
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoSessionInput"
+      responses:
+        "201":
+          description: Share session and private owner key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoSessionCreated"
+        "400":
+          description: Invalid share details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: The location is outside the supported country
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /geo/sessions/{id}:
+    get:
+      operationId: getGeoSession
+      tags: [geo]
+      summary: Read a shared location without an account
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 20
+      responses:
+        "200":
+          description: Public share session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoSession"
+        "404":
+          description: The share is missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /geo/sessions/{id}/location:
+    patch:
+      operationId: updateGeoSessionLocation
+      tags: [geo]
+      summary: Update the location in an active live share
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 20
+        - name: X-Session-Owner
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 32
+            maxLength: 128
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoLocationUpdate"
+      responses:
+        "200":
+          description: Updated live share
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoSession"
+        "403":
+          description: The owner key is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The share is missing, stopped, or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Only a live share can receive location updates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Invalid location update
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "422":
+          description: The location is outside the supported country
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /geo/sessions/{id}/stop:
+    post:
+      operationId: stopGeoSession
+      tags: [geo]
+      summary: Immediately stop an active share
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 20
+        - name: X-Session-Owner
+          in: header
+          required: true
+          schema:
+            type: string
+            minLength: 32
+            maxLength: 128
+      responses:
+        "200":
+          description: Share stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoSessionStopped"
+        "403":
+          description: The owner key is invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: The share is missing or expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "400":
+          description: Invalid share credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +238,100 @@ components:
           type: string
       required:
         - status
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required: [error]
+    GeoAddress:
+      type: object
+      properties:
+        houseNumber: { type: ["string", "null"] }
+        street: { type: ["string", "null"] }
+        avenue: { type: ["string", "null"] }
+        neighborhood: { type: ["string", "null"] }
+        city: { type: ["string", "null"] }
+        state: { type: ["string", "null"] }
+        country: { type: ["string", "null"] }
+        countryCode: { type: ["string", "null"] }
+        postalCode: { type: ["string", "null"] }
+        formatted: { type: ["string", "null"] }
+      required:
+        - houseNumber
+        - street
+        - avenue
+        - neighborhood
+        - city
+        - state
+        - country
+        - countryCode
+        - postalCode
+        - formatted
+    GeoLocation:
+      type: object
+      properties:
+        latitude: { type: number, minimum: -90, maximum: 90 }
+        longitude: { type: number, minimum: -180, maximum: 180 }
+        accuracy: { type: number, minimum: 0 }
+        altitude: { type: ["number", "null"] }
+        speed: { type: ["number", "null"] }
+        heading: { type: ["number", "null"] }
+        timestamp: { type: string, format: date-time }
+        address:
+          anyOf:
+            - $ref: "#/components/schemas/GeoAddress"
+            - type: "null"
+      required:
+        - latitude
+        - longitude
+        - accuracy
+        - altitude
+        - speed
+        - heading
+        - timestamp
+        - address
+    GeoSession:
+      type: object
+      properties:
+        id: { type: string }
+        kind: { type: string, enum: [location, live] }
+        isActive: { type: boolean }
+        expiresAt: { type: ["string", "null"], format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+        location:
+          anyOf:
+            - $ref: "#/components/schemas/GeoLocation"
+            - type: "null"
+      required: [id, kind, isActive, expiresAt, createdAt, updatedAt, location]
+    GeoSessionCreated:
+      type: object
+      properties:
+        session:
+          $ref: "#/components/schemas/GeoSession"
+        ownerToken:
+          type: string
+      required: [session, ownerToken]
+    GeoSessionStopped:
+      type: object
+      properties:
+        id: { type: string }
+        isActive: { type: boolean, enum: [false] }
+        stoppedAt: { type: string, format: date-time }
+      required: [id, isActive, stoppedAt]
+    GeoSessionInput:
+      type: object
+      properties:
+        kind: { type: string, enum: [location, live] }
+        expiresMinutes: { type: integer, enum: [0, 15, 60, 480] }
+        location:
+          $ref: "#/components/schemas/GeoLocation"
+      required: [kind, expiresMinutes, location]
+    GeoLocationUpdate:
+      type: object
+      properties:
+        location:
+          $ref: "#/components/schemas/GeoLocation"
+      required: [location]
 

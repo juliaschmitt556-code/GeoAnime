@@ -1,0 +1,17 @@
+{
+  "id": "./",
+  "name": "GeoAnime — Companion GPS",
+  "short_name": "GeoAnime",
+  "description": "Private GPS navigation with an anime route companion.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0e141d",
+  "theme_color": "#0e141d",
+  "categories": ["navigation", "utilities"],
+  "icons": [
+    { "src": "icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

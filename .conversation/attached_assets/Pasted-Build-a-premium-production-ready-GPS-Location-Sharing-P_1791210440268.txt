@@ -1,0 +1,412 @@
+Build a premium, production-ready GPS Location-Sharing Progressive Web App (PWA) called GeoAnime.
+
+The app should be mobile-first, extremely polished, responsive, fast, and installable as a PWA. The visual identity should combine futuristic GPS technology with high-quality original anime artwork.
+
+CORE PURPOSE
+
+The app allows a user to:
+
+1. Request permission to access their device GPS location.
+2. Get their current latitude and longitude.
+3. Continuously monitor their location using navigator.geolocation.watchPosition().
+4. Convert coordinates into a complete readable address using reverse geocoding.
+5. Display:
+    * Street
+    * House/building number when available
+    * Avenue/Road
+    * Neighborhood/Area
+    * City
+    * State/Province
+    * Country
+    * Postal code when available
+    * Latitude
+    * Longitude
+    * GPS accuracy
+    * Altitude when available
+    * Speed when available
+    * Heading/direction when available
+    * Last updated time
+6. Display the position on an interactive map.
+7. Generate a unique shareable location URL.
+8. Allow the user to share the location through the device’s native share sheet.
+9. Support a live-location mode that updates as the user moves.
+10. Allow the user to stop live location sharing at any time.
+
+IMPORTANT GPS REQUIREMENTS
+
+Use the browser Geolocation API.
+
+For one-time location:
+
+navigator.geolocation.getCurrentPosition()
+
+For continuous tracking:
+
+navigator.geolocation.watchPosition()
+
+Use:
+
+{
+  enableHighAccuracy: true,
+  timeout: 15000,
+  maximumAge: 5000
+}
+
+Handle all permission states and GPS errors gracefully.
+
+The app must clearly explain that location access requires explicit browser permission and HTTPS.
+
+Never attempt to spoof, override, or silently change the device’s GPS location.
+
+LOCATION OBJECT
+
+Maintain a structured location object such as:
+
+{
+  latitude,
+  longitude,
+  accuracy,
+  altitude,
+  speed,
+  heading,
+  timestamp,
+  address: {
+    houseNumber,
+    street,
+    avenue,
+    neighborhood,
+    city,
+    state,
+    country,
+    postalCode,
+    formatted
+  }
+}
+
+REVERSE GEOCODING
+
+After obtaining coordinates, send them to a reliable reverse-geocoding provider and retrieve the most detailed available address.
+
+Display the address hierarchically:
+
+Street / House Number
+Avenue / Road
+Area / Neighborhood
+City
+State / Province
+Country
+
+Do not invent missing address information. If a particular field is unavailable, hide it or display “Not available.”
+
+SHARING SYSTEM
+
+Create two modes.
+
+1. SHARE CURRENT LOCATION
+
+Capture the user’s current position and create a shareable location session.
+
+Example:
+
+https://yourdomain.com/location/8F42KLM2
+
+The recipient should be able to open the link without needing an account.
+
+Show:
+
+* Shared address
+* Coordinates
+* Accuracy
+* Timestamp
+* Map
+* Location marker
+
+2. LIVE LOCATION
+
+Create a temporary live-sharing session.
+
+Example:
+
+https://yourdomain.com/live/7XK92PLM
+
+The session should update whenever the owner’s GPS position changes.
+
+Show:
+
+LIVE LOCATION
+🟢 Updating
+
+* Current address
+* Current coordinates
+* Accuracy
+* Last updated
+* Movement on map
+
+Include:
+
+STOP SHARING
+
+When the owner stops sharing, the live session must become inactive.
+
+Allow configurable expiration:
+
+* 15 minutes
+* 1 hour
+* 8 hours
+* Until manually stopped
+
+MAP
+
+Use a high-quality interactive map.
+
+Features:
+
+* Current-location marker
+* Anime-styled custom marker
+* Accuracy circle
+* Animated location pulse
+* Route/path visualization during live tracking
+* Center map on current location
+* Zoom controls
+* Full-screen map option
+
+When the user moves, smoothly animate the marker to the new position.
+
+DESIGN STYLE
+
+Create a premium futuristic anime aesthetic.
+
+Use:
+
+* Dark elegant interface
+* Glassmorphism cards
+* Subtle gradients
+* Neon-style GPS elements
+* Soft glowing effects
+* Holographic UI elements
+* Smooth micro-animations
+* Rounded cards
+* Premium typography
+* Clean spacing
+* Minimal clutter
+
+The app should feel like a futuristic anime navigation system rather than a generic GPS website.
+
+ANIME ARTWORK
+
+Create a completely consistent original anime visual identity throughout the application.
+
+Use beautiful, high-quality anime illustrations for the major features.
+
+Do NOT use random stock images or unrelated anime characters.
+
+Create an original anime mascot/character specifically for the application.
+
+Use different poses/scenes for:
+
+GPS Permission
+
+Anime character holding a glowing holographic GPS device.
+
+Location Found
+
+Anime character standing beside a large glowing location pin with GPS targeting rings.
+
+Live Tracking
+
+Anime character walking while a glowing route follows behind them.
+
+Location Sharing
+
+Anime character projecting a holographic location signal toward another device.
+
+Address
+
+Anime character examining a futuristic holographic map/address panel.
+
+Privacy
+
+Anime character protecting a glowing location crystal inside a transparent shield.
+
+GPS Searching
+
+Anime character looking toward the sky while satellites and holographic GPS signals surround them.
+
+All artwork should have:
+
+* High-resolution anime quality
+* Detailed facial features
+* Cinematic lighting
+* Consistent character design
+* Futuristic clothing
+* Clean backgrounds
+* Professional UI integration
+* Transparent or carefully composited backgrounds where appropriate
+
+Avoid copying any existing anime character or copyrighted franchise.
+
+HOME SCREEN
+
+Create an impressive landing screen.
+
+Header:
+
+GeoAnime
+
+Subtitle:
+
+Your location. Precisely tracked.
+
+Large animated anime hero illustration.
+
+Primary button:
+
+GET MY LOCATION
+
+Secondary button:
+
+SHARE LOCATION
+
+Show GPS status:
+
+🔴 GPS OFFLINE
+🟡 SEARCHING FOR GPS
+🟢 GPS CONNECTED
+
+LOCATION CARD
+
+After location permission is granted, show:
+
+CURRENT LOCATION
+
+Street and house number
+
+Avenue / Road
+
+Area / Neighborhood
+
+City, State, Country
+
+Then:
+
+COORDINATES
+
+Latitude
+Longitude
+
+ACCURACY
+
+±8 meters
+
+LAST UPDATED
+
+12:43:27 PM
+
+Use elegant cards and animated data updates.
+
+LIVE TRACKING SCREEN
+
+Display:
+
+LIVE LOCATION
+
+🟢 LIVE
+
+Anime character animation.
+
+Show:
+
+* Current address
+* Accuracy
+* Speed
+* Direction
+* Last update
+* Interactive map
+
+Buttons:
+
+COPY LINK
+
+SHARE LIVE LOCATION
+
+STOP SHARING
+
+PWA REQUIREMENTS
+
+Implement:
+
+* manifest.json
+* Service worker
+* Installable PWA
+* App icon
+* Splash screen
+* Offline shell
+* Responsive mobile interface
+* iOS and Android compatibility
+* HTTPS requirement
+* Safe permission handling
+
+The application should feel like a native mobile application when installed.
+
+PRIVACY
+
+Make privacy extremely clear.
+
+Never collect location without the user’s explicit permission.
+
+Show an obvious live-sharing indicator whenever live tracking is active.
+
+Allow the user to immediately stop sharing.
+
+Do not retain location data longer than necessary.
+
+Use secure, random session IDs rather than exposing sensitive information in URLs.
+
+ERROR STATES
+
+Create beautiful anime-themed states for:
+
+* GPS permission denied
+* GPS unavailable
+* Timeout
+* Location temporarily unavailable
+* Reverse-geocoding failure
+* No internet connection
+* Live-sharing expired
+* Location sharing stopped
+
+For example:
+
+GPS SIGNAL LOST
+
+Anime character looking at a broken holographic GPS signal.
+
+Button:
+
+TRY AGAIN
+
+PERFORMANCE
+
+Optimize for mobile devices.
+
+Use lazy loading for anime artwork.
+
+Compress images appropriately.
+
+Keep the initial application lightweight.
+
+Use smooth animations without causing excessive battery usage.
+
+Avoid unnecessary GPS updates.
+
+Only use high-frequency tracking while live tracking is actively enabled.
+
+FINAL RESULT
+
+The finished product should look like a premium futuristic anime GPS/location-sharing application, not a basic HTML GPS demo.
+
+Prioritize:
+
+Beautiful anime visuals + accurate GPS + complete address information + interactive map + secure sharing + live tracking + excellent mobile UX.
+
+The interface should be polished enough to feel like a real commercial mobile application.
