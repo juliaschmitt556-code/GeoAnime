@@ -288,7 +288,7 @@ function Home() {
   const [isLiveRunning, setIsLiveRunning] = useState(false);
   const watchIdRef = useRef<number | null>(null);
   const createSession = useCreateGeoSession();
-  const ownerRequest = { headers: liveSession?.ownerToken ? { 'x-owner-token': liveSession.ownerToken } : {} };
+  const ownerRequest = liveSession?.ownerToken ? { headers: { 'x-owner-token': liveSession.ownerToken } } : undefined;
   const updateLocation = useUpdateGeoSessionLocation({ request: ownerRequest });
   const stopSession = useStopGeoSession({ request: ownerRequest });
   const { offline, install } = usePwa();
@@ -368,7 +368,6 @@ function Home() {
       const url = `${window.location.origin}${basePath}/${shareKind === 'live' ? 'live' : 'location'}/${created.session.id}`;
       setShareResult({ url, kind: shareKind });
       if (shareKind === 'live') {
-        window.localStorage.setItem(`geoanime-owner-${created.session.id}`, created.ownerToken);
         setLiveSession({ id: created.session.id, ownerToken: created.ownerToken, location: point });
         setIsLiveRunning(true);
       }
@@ -385,7 +384,6 @@ function Home() {
       setIsLiveRunning(false);
       if (watchIdRef.current != null && navigator.geolocation) navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
-      window.localStorage.removeItem(`geoanime-owner-${liveSession.id}`);
       setLiveSession(null);
       showToast('Live location stopped.');
     } catch {
@@ -409,7 +407,7 @@ function Home() {
           setGpsMessage('Location access was revoked. The live share is no longer receiving updates.');
         }
       },
-      { enableHighAccuracy: true, maximumAge: 0, timeout: 18000 },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15000 },
     );
     return () => {
       if (watchIdRef.current != null) navigator.geolocation.clearWatch(watchIdRef.current);
@@ -542,7 +540,7 @@ function PublicShare() {
         <Header onInstall={install} />
         {query.isLoading ? <div className="share-page"><div className="share-aside"><div className="skeleton" style={{ height: 22, width: 180 }} /><div className="skeleton" style={{ height: 150 }} /><div className="skeleton" style={{ height: 196 }} /></div><div className="skeleton" style={{ minHeight: 480 }} /></div> :
           query.error ? <div className="share-page"><section className="share-aside"><div className="eyebrow">SHARED POSITION</div><div className="card action-block"><AlertTriangle size={22} color="#f1a3b5" /><h1 className="action-title" style={{ fontSize: 22, marginTop: 13 }}>This link is unavailable.</h1><p className="action-description">It may have expired, been removed, or the connection may be unavailable.</p><button className="btn btn-secondary" onClick={() => void query.refetch()} data-testid="button-retry-session"><RotateCw size={14} />Try again</button></div></section><MapPanel /></div> :
-            session && <div className="share-page">
+            session && fixedLocation && <div className="share-page">
               <section className="share-aside">
                 <div className="eyebrow">{isLive ? 'LIVE COMPANION LINK' : 'SHARED POSITION'}</div>
                 <div className="share-visual">
@@ -558,12 +556,12 @@ function PublicShare() {
                   <div className="card status-card">
                     <div className="card-heading"><h2>{isLive ? 'Live position' : 'Pinned position'}</h2><div className="status-label"><i className={`gps-dot ${session.isActive ? 'ready' : ''}`} />{isLive ? 'LIVE' : 'FIXED'}</div></div>
                     <div className="address" data-testid="text-shared-address">{formatAddress(address) || (reverse.isFetching ? 'Resolving U.S. address…' : 'U.S. address unavailable')}</div>
-                    <div className="sub-address" data-testid="text-shared-coordinates">{formatCoordinates(publicFix)} &nbsp;·&nbsp; ±{Math.round(session.location.accuracy)} m</div>
-                    <div className="coordinates"><div><div className="coord-label">Latitude</div><div className="coord-value">{session.location.latitude.toFixed(6)}</div></div><div><div className="coord-label">Longitude</div><div className="coord-value">{session.location.longitude.toFixed(6)}</div></div></div>
+                    <div className="sub-address" data-testid="text-shared-coordinates">{formatCoordinates(publicFix)} &nbsp;·&nbsp; ±{Math.round(fixedLocation.accuracy)} m</div>
+                    <div className="coordinates"><div><div className="coord-label">Latitude</div><div className="coord-value">{fixedLocation.latitude.toFixed(6)}</div></div><div><div className="coord-label">Longitude</div><div className="coord-value">{fixedLocation.longitude.toFixed(6)}</div></div></div>
                     <div className="measure-row">
-                      {session.location.altitude != null && <div className="measure"><Mountain size={13} /><span>ALT&nbsp; <b>{Math.round(session.location.altitude)} m</b></span></div>}
-                      {session.location.speed != null && <div className="measure"><Gauge size={13} /><span>SPEED&nbsp; <b>{(session.location.speed * 3.6).toFixed(1)} km/h</b></span></div>}
-                      {session.location.heading != null && <div className="measure"><Compass size={13} /><span>HEADING&nbsp; <b>{Math.round(session.location.heading)}°</b></span></div>}
+                      {fixedLocation.altitude != null && <div className="measure"><Mountain size={13} /><span>ALT&nbsp; <b>{Math.round(fixedLocation.altitude)} m</b></span></div>}
+                      {fixedLocation.speed != null && <div className="measure"><Gauge size={13} /><span>SPEED&nbsp; <b>{(fixedLocation.speed * 3.6).toFixed(1)} km/h</b></span></div>}
+                      {fixedLocation.heading != null && <div className="measure"><Compass size={13} /><span>HEADING&nbsp; <b>{Math.round(fixedLocation.heading)}°</b></span></div>}
                     </div>
                     {address && <div className="sub-address" style={{ marginTop: 14 }}>{[address.neighborhood, address.postalCode].filter(Boolean).join(' · ')}</div>}
                   </div>
