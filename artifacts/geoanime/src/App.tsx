@@ -534,6 +534,29 @@ function PublicShare() {
     }
   };
 
+  if (session && !fixedLocation) {
+    return (
+      <div className="app-shell">
+        <div className="layout">
+          <Header onInstall={install} />
+          <div className="share-page">
+            <section className="share-aside">
+              <div className="eyebrow">SHARED POSITION</div>
+              <div className="card action-block" data-testid="status-waiting-location">
+                <LoaderCircle size={22} className="spin" color="#54e4df" />
+                <h1 className="action-title" style={{ fontSize: 22, marginTop: 13 }}>Waiting for location…</h1>
+                <p className="action-description">This shared session is ready, but the first GPS position has not arrived yet.</p>
+              </div>
+              <PrivacyNote />
+              <Footer />
+            </section>
+            <MapPanel emptyTitle="Waiting for location…" emptyDescription="The map will update when the first position is available." />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="app-shell">
       <div className="layout">
